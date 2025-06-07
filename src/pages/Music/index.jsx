@@ -6,7 +6,7 @@ import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined, PlayC
 
 const { Text, Title } = Typography;
 
-const Test = () => {
+const Music = () => {
   const [dataSources, setDataSources] = useState([]);
   const [isLoading, setIsLoading] = useState([]);
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
@@ -139,17 +139,21 @@ const handleSubmit = () => {
   }
 
   const[searchText, setSearchText] = useState("");
-  // const handleSearch = (search) => {
-  //   setSearchText(search.toLowerCase());
-  //   // if (value.length > 0) {
-  //   //   const filteredData = dataSources.filter((item) =>
-  //   //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
-  //   //   );
-  //   //   setDataSources(filteredData);
-  //   // } else {
-  //   //   getDataPlaylist();
-  //   // }
-  // };
+  const handleSearch = (search) => {
+    setSearchText(search.toLowerCase());
+    // if (value.length > 0) {
+    //   const filteredData = dataSources.filter((item) =>
+    //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
+    //   );
+    //   setDataSources(filteredData);
+    // } else {
+    //   getDataPlaylist();
+    // }
+  };
+
+  const musicCount = dataSources.filter(
+  (item) => item?.play_genre?.toLowerCase() === "music"
+  ).length;
 
   let dataSourceFiltered = Array.isArray(dataSources)
     ? dataSources.filter((item) =>
@@ -196,6 +200,7 @@ const handleSubmit = () => {
                   label="Genre"
                   name="play_genre"
                   rules={[{ required: true }]}
+                  initialValue={"music"}
                 >
                   <Select placeholder="Pilih genre">
                     <Option value="music">Music</Option>
@@ -217,15 +222,18 @@ const handleSubmit = () => {
               </Form>
              </Drawer>
 
-            <Title>Daftar Musik</Title>
+            <Title>Daftar Music</Title>
+            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+              Jumlah Playlist music : {musicCount}
+            </Text>
             <Input
               prefix={<SearchOutlined />}
-              placeholder="Cari judul playlist"
+              placeholder="Cari judul Music"
               allowClear
               size="large"
               onChange={(e) => setSearchText(e.target.value)}
             />
-            <br />
+            <div style={{ marginBottom: 16 }}> </div>
             {isLoading ? (
               <div>Sedang menunggu data</div>
             ) : (
@@ -234,11 +242,15 @@ const handleSubmit = () => {
     gutter: 16,
     xs: 1,
     sm: 1,
-    md: 1,
-    lg: 1,
-    xl: 1,
+    md: 2,
+    lg: 2,
+    xl: 2,
   }}
                 dataSource={dataSourceFiltered ?? []}
+                pagination={{
+                  pageSize: 6, 
+                  showSizeChanger: false,
+                }}
                 renderItem={(item) => (
                   <List.Item key={item?.id_play}>
   <Card
@@ -354,4 +366,4 @@ style={{
 
   );
 };
-export default Test;
+export default Music;

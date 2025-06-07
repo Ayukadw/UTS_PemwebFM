@@ -92,7 +92,7 @@ const handleSubmit = () => {
       .catch((err) => {
         setIsLoading(false);
         console.log(err);
-      });
+    });
   };
 
 
@@ -228,6 +228,7 @@ const handleSubmit = () => {
               size="large"
               onChange={(e) => setSearchText(e.target.value)}
             />
+            <div style={{ marginBottom: 16 }}> </div>
             {isLoading ? (
               <div>Sedang menunggu data</div>
             ) : (
