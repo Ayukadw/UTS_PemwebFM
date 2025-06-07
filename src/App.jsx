@@ -12,6 +12,7 @@ import PrivateRoute from "./components/layout/PrivateRoute";
 import Blank from "./pages/Blank";
 import Gallery from "./pages/Gallery";
 import Playlist from "./pages/Playlist";
+import Test from "./pages/Test";
 
 function App() {
   return (
@@ -76,9 +77,15 @@ function App() {
         />
         <Route
           exact
+          path="/test"
+          element={<PrivateRoute component={<Test />} />}
+        />
+        <Route
+          exact
           path="/playlist"
           element={<PrivateRoute component={<Playlist />} />}
         />
+        
       </Routes>
     </div>
   );
