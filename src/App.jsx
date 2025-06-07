@@ -13,6 +13,7 @@ import Blank from "./pages/Blank";
 import Gallery from "./pages/Gallery";
 import Playlist from "./pages/Playlist";
 import Test from "./pages/Test";
+import Movie from "./pages/Movie";
 
 function App() {
   return (
@@ -82,10 +83,14 @@ function App() {
         />
         <Route
           exact
+          path="/movie"
+          element={<PrivateRoute component={<Movie />} />}
+        />
+        <Route
+          exact
           path="/playlist"
           element={<PrivateRoute component={<Playlist />} />}
         />
-        
       </Routes>
     </div>
   );
