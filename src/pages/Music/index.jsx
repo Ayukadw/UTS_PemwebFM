@@ -1,12 +1,12 @@
-import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select} from "antd";
+import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select, Tooltip} from "antd";
 import { useEffect, useState } from "react";
 import {deleteData, getData, sendData} from "../../utils/api"
 import { List } from "antd/lib";
-import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined} from '@ant-design/icons';
+import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined, PlayCircleFilled} from '@ant-design/icons';
 
-const { Title, Text } = Typography;
+const { Text, Title } = Typography;
 
-const Playlist = () => {
+const Music = () => {
   const [dataSources, setDataSources] = useState([]);
   const [isLoading, setIsLoading] = useState([]);
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
@@ -70,27 +70,30 @@ const handleSubmit = () => {
   }, []);
 
   const getDataPlaylist = () => {
-    setIsLoading(true)
-    getData("/api/playlist/43")
-      .then((resp) => {
-        setIsLoading(false);
-        console.log("DATA DARI API:", resp); // Tambahkan ini untuk debug
+  setIsLoading(true);
+  getData("/api/playlist/43")
+    .then((resp) => {
+      setIsLoading(false);
 
-        // Solusi utama: pastikan isinya array
-        if (Array.isArray(resp)) {
-          setDataSources(resp);
-        } else if (Array.isArray(resp?.datas)) {
-          setDataSources(resp.datas); // <- ini kalau data ada di dalam "datas"
-        } else {
-          console.warn("Format data tidak dikenali:", resp);
-          setDataSources([]);
-        }
-      })
-      .catch((err) => {
-        setIsLoading(false)
-        console.log(err)
-      });
-  };
+      let playlists = [];
+
+      if (Array.isArray(resp)) {
+        playlists = resp;
+      } else if (Array.isArray(resp?.datas)) {
+        playlists = resp.datas;
+      }
+
+      const filtered = playlists.filter(
+        (item) => item?.play_genre?.toLowerCase() === "music"
+      );
+
+      setDataSources(filtered);
+    })
+    .catch((err) => {
+      setIsLoading(false);
+      console.log(err);
+    });
+};
 
 
   const [isEdit, setIsEdit] = useState(false);
@@ -136,13 +139,27 @@ const handleSubmit = () => {
   }
 
   const[searchText, setSearchText] = useState("");
+  const handleSearch = (search) => {
+    setSearchText(search.toLowerCase());
+    // if (value.length > 0) {
+    //   const filteredData = dataSources.filter((item) =>
+    //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
+    //   );
+    //   setDataSources(filteredData);
+    // } else {
+    //   getDataPlaylist();
+    // }
+  };
+
+  const musicCount = dataSources.filter(
+  (item) => item?.play_genre?.toLowerCase() === "music"
+  ).length;
 
   let dataSourceFiltered = Array.isArray(dataSources)
     ? dataSources.filter((item) =>
         (item?.play_name || "").toLowerCase().includes(searchText.toLowerCase())
       )
     : [];
-
   const { Option } = Select;
 
   return (
@@ -183,13 +200,10 @@ const handleSubmit = () => {
                   label="Genre"
                   name="play_genre"
                   rules={[{ required: true }]}
+                  initialValue={"music"}
                 >
                   <Select placeholder="Pilih genre">
                     <Option value="music">Music</Option>
-                    <Option value="song">Song</Option>
-                    <Option value="movie">Movie</Option>
-                    <Option value="education">Education</Option>
-                    <Option value="others">Others</Option>
                   </Select>
                 </Form.Item>
                 <Form.Item
@@ -208,10 +222,13 @@ const handleSubmit = () => {
               </Form>
              </Drawer>
 
-            <Title>Daftar Playlist</Title>
+            <Title>Daftar Music</Title>
+            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+              Jumlah Playlist music : {musicCount}
+            </Text>
             <Input
               prefix={<SearchOutlined />}
-              placeholder="Cari judul playlist"
+              placeholder="Cari judul Music"
               allowClear
               size="large"
               onChange={(e) => setSearchText(e.target.value)}
@@ -220,77 +237,125 @@ const handleSubmit = () => {
             {isLoading ? (
               <div>Sedang menunggu data</div>
             ) : (
-              <List
-                grid={{
-                  gutter: 16,
-                  xs: 1,
-                  sm: 1,
-                  md: 2,
-                  lg: 3,
-                  xl: 3,
-                }}
+           <List
+  grid={{
+    gutter: 16,
+    xs: 1,
+    sm: 1,
+    md: 2,
+    lg: 2,
+    xl: 2,
+  }}
                 dataSource={dataSourceFiltered ?? []}
+                pagination={{
+                  pageSize: 6, 
+                  showSizeChanger: false,
+                }}
                 renderItem={(item) => (
                   <List.Item key={item?.id_play}>
-                    <Card
-                      cover={
-                        <img
-                          src={
-                            item?.play_thumbnail ||
-                            "https://via.placeholder.com/300x150.png?text=No+Image"
-                          }
-                          alt="Thumbnail"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              "https://via.placeholder.com/300x150.png?text=Broken";
-                          }}
-                        />
-                      }
-                      actions={[
-                        <EditOutlined
-                          key="edit"
-                          onClick={() => handleDrawerEdit(item)}
-                        />,
-                        <a
-                          key="view"
-                          href={item?.play_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <SearchOutlined />
-                        </a>,
-                      <Popconfirm
-                        key={item?.id_play}  
-                        title="Hapus data"
-                        description={`Apakah kamu yakin menghapus data ${item?.play_name}?`}
-                        onConfirm={() => confirmDelete(item)}
-                        okText="Ya"
-                        cancelText="Tidak"
-                      >
-                        <DeleteOutlined key={item?.id_play} />
-                      </Popconfirm>]}
-                    >
-                      <Card.Meta
-                        title={item?.play_name || "Tanpa Judul"}
-                        description={
-                          <>
-                            <Text>Genre: {item?.play_genre || "-"}</Text>
-                            <br />
-                            <Text>{item?.play_description || "-"}</Text>
-                            <br />
-                            <a
-                              href={item?.play_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Tonton Video
-                            </a>
-                          </>
-                        }
-                      />
-                    </Card>
-                  </List.Item>
+  <Card
+    style={{
+      padding: 0,
+      borderRadius: 12,
+      overflow: "hidden",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    }}
+    bodyStyle={{ padding: 0, width: "100%" }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      {/* Thumbnail */}
+      <div style={{ flex: "0 0 126px" }}>
+        <img
+          src={
+            item?.play_thumbnail ||
+            "https://via.placeholder.com/126x126.png?text=No+Image"
+          }
+          alt="Thumbnail"
+          style={{
+            width: 126,
+            height: 126,
+            objectFit: "cover",
+          }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src =
+              "https://via.placeholder.com/126x126.png?text=Broken";
+          }}
+        />
+      </div>
+
+      {/* Judul & info */}
+      <div
+        style={{
+          flex: 1,
+          padding: "12px 24px",
+        }}
+      >
+        <Title level={5} style={{ margin: 0 }}>
+          {item?.play_name || "Tanpa Judul"}
+        </Title>
+        <Text type="secondary">
+        {item?.play_description || "-"}
+        </Text>
+        {/* Ikon aksi */}
+        <div style={{ marginTop: 12 }}>
+          <Tooltip title="Edit">
+            <EditOutlined
+              style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
+              onClick={() => handleDrawerEdit(item)}
+            />
+          </Tooltip>
+          <Tooltip title="Lihat">
+            <a
+              href={item?.play_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ marginRight: 16, fontSize: 18, }}
+            >
+              <SearchOutlined/>
+            </a>
+          </Tooltip>
+          <Tooltip title="Hapus">
+            <Popconfirm
+              title="Hapus data"
+              description={`Yakin menghapus data ${item?.play_title}?`}
+              onConfirm={() => confirmDelete(item)}
+              okText="Ya"
+              cancelText="Tidak"
+            >
+              <DeleteOutlined
+              style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
+              />
+            </Popconfirm>
+          </Tooltip>
+        </div>
+      </div>
+
+      {/* Tombol Play */}
+      <div
+  onClick={() => window.open(item?.play_url, "_blank")}
+>
+  <PlayCircleFilled style={{ fontSize: 36}} />
+</div>
+<div 
+style={{
+    flex: "0 0 40px",
+  }}>
+
+  </div>
+    </div>
+  </Card>
+</List.Item>
+
                 )}
               />
             )}
@@ -301,5 +366,4 @@ const handleSubmit = () => {
 
   );
 };
-
-export default Playlist;
+export default Music;

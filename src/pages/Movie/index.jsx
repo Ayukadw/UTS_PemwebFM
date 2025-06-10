@@ -6,7 +6,7 @@ import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined} from 
 
 const { Title, Text } = Typography;
 
-const Playlist = () => {
+const Movie = () => {
   const [dataSources, setDataSources] = useState([]);
   const [isLoading, setIsLoading] = useState([]);
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
@@ -70,26 +70,29 @@ const handleSubmit = () => {
   }, []);
 
   const getDataPlaylist = () => {
-    setIsLoading(true)
+    setIsLoading(true);
     getData("/api/playlist/43")
       .then((resp) => {
         setIsLoading(false);
-        console.log("DATA DARI API:", resp); // Tambahkan ini untuk debug
-
-        // Solusi utama: pastikan isinya array
+  
+        let playlists = [];
+  
         if (Array.isArray(resp)) {
-          setDataSources(resp);
+          playlists = resp;
         } else if (Array.isArray(resp?.datas)) {
-          setDataSources(resp.datas); // <- ini kalau data ada di dalam "datas"
-        } else {
-          console.warn("Format data tidak dikenali:", resp);
-          setDataSources([]);
+          playlists = resp.datas;
         }
+  
+        const filtered = playlists.filter(
+          (item) => item?.play_genre?.toLowerCase() === "movie"
+        );
+  
+        setDataSources(filtered);
       })
       .catch((err) => {
-        setIsLoading(false)
-        console.log(err)
-      });
+        setIsLoading(false);
+        console.log(err);
+    });
   };
 
 
@@ -136,12 +139,25 @@ const handleSubmit = () => {
   }
 
   const[searchText, setSearchText] = useState("");
+  // const handleSearch = (search) => {
+  //   setSearchText(search.toLowerCase());
+  //   // if (value.length > 0) {
+  //   //   const filteredData = dataSources.filter((item) =>
+  //   //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
+  //   //   );
+  //   //   setDataSources(filteredData);
+  //   // } else {
+  //   //   getDataPlaylist();
+  //   // }
+  // };
 
   let dataSourceFiltered = Array.isArray(dataSources)
     ? dataSources.filter((item) =>
         (item?.play_name || "").toLowerCase().includes(searchText.toLowerCase())
       )
     : [];
+
+
 
   const { Option } = Select;
 
@@ -170,7 +186,7 @@ const handleSubmit = () => {
                   name="play_title"
                   rules={[{ required: true }]}
                 >
-                  <Input placeholder="Masukkan judul playlist" />
+                  <Input placeholder="Masukkan judul movie" />
                 </Form.Item>
                 <Form.Item
                   label="URL Video"
@@ -185,11 +201,7 @@ const handleSubmit = () => {
                   rules={[{ required: true }]}
                 >
                   <Select placeholder="Pilih genre">
-                    <Option value="music">Music</Option>
-                    <Option value="song">Song</Option>
                     <Option value="movie">Movie</Option>
-                    <Option value="education">Education</Option>
-                    <Option value="others">Others</Option>
                   </Select>
                 </Form.Item>
                 <Form.Item
@@ -208,10 +220,10 @@ const handleSubmit = () => {
               </Form>
              </Drawer>
 
-            <Title>Daftar Playlist</Title>
+            <Title>Daftar Movie</Title>
             <Input
               prefix={<SearchOutlined />}
-              placeholder="Cari judul playlist"
+              placeholder="Cari judul Movie"
               allowClear
               size="large"
               onChange={(e) => setSearchText(e.target.value)}
@@ -263,7 +275,7 @@ const handleSubmit = () => {
                       <Popconfirm
                         key={item?.id_play}  
                         title="Hapus data"
-                        description={`Apakah kamu yakin menghapus data ${item?.play_name}?`}
+                        description={`Apakah kamu yakin menghapus data ${item?.play_title}?`}
                         onConfirm={() => confirmDelete(item)}
                         okText="Ya"
                         cancelText="Tidak"
@@ -302,4 +314,4 @@ const handleSubmit = () => {
   );
 };
 
-export default Playlist;
+export default Movie;
