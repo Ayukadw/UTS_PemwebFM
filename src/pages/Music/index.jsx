@@ -38,7 +38,7 @@ const handleSubmit = () => {
   const play_description = InputPlaylist.getFieldValue("play_description");
 
   const formData = new FormData();
-  formData.append("play_name", play_name);
+  formData.append("play_title", play_name);
   formData.append("play_url", play_url);
   formData.append("play_thumbnail", play_thumbnail);
   formData.append("play_genre", play_genre);
@@ -107,7 +107,7 @@ const handleSubmit = () => {
     //ambil id yang telah diselect sesuai dengan card yang di click
     setIdSelected(record?.id_play);
     //sisipkan nilai nilai yang diselect ke form drawer
-    InputPlaylist.setFieldValue("play_title", record?.play_title);
+    InputPlaylist.setFieldValue("play_title", record?.play_name);
     InputPlaylist.setFieldValue("play_url", record?.play_url);
     InputPlaylist.setFieldValue("play_genre", record?.play_genre);
     InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
@@ -139,17 +139,6 @@ const handleSubmit = () => {
   }
 
   const[searchText, setSearchText] = useState("");
-  const handleSearch = (search) => {
-    setSearchText(search.toLowerCase());
-    // if (value.length > 0) {
-    //   const filteredData = dataSources.filter((item) =>
-    //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
-    //   );
-    //   setDataSources(filteredData);
-    // } else {
-    //   getDataPlaylist();
-    // }
-  };
 
   const musicCount = dataSources.filter(
   (item) => item?.play_genre?.toLowerCase() === "music"
@@ -327,7 +316,7 @@ const handleSubmit = () => {
           <Tooltip title="Hapus">
             <Popconfirm
               title="Hapus data"
-              description={`Yakin menghapus data ${item?.play_title}?`}
+              description={`Yakin menghapus data ${item?.play_name}?`}
               onConfirm={() => confirmDelete(item)}
               okText="Ya"
               cancelText="Tidak"

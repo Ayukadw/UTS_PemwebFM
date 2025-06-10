@@ -14,6 +14,9 @@ import PrivateRoute from "./components/layout/PrivateRoute";
 import Playlist from "./pages/Playlist";
 import Music from "./pages/Music";
 import Movie from "./pages/Movie";
+import Others from "./pages/Others";
+import Song from "./pages/Song";
+import Education from "./pages/Education";
 
 function App() {
   return (
@@ -26,56 +29,6 @@ function App() {
           path="/dashboard"
           element={<PrivateRoute component={<Dashboard />} />}
         />
-        {/* <Route
-          exact
-          path="/books"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/orders"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/categories"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/products"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/report-orders"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/summary"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/product-sales-report"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/profile"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/membership"
-          element={<PrivateRoute component={<Blank />} />}
-        />
-        <Route
-          exact
-          path="/gallery"
-          element={<PrivateRoute component={<Gallery />} />}
-        /> */}
         <Route
           exact
           path="/music"
@@ -90,6 +43,21 @@ function App() {
           exact
           path="/playlist"
           element={<PrivateRoute component={<Playlist />} />}
+        />
+        <Route
+          exact
+          path="/others"
+          element={<PrivateRoute component={<Others />} />}
+        />
+        <Route
+          exact
+          path="/song"
+          element={<PrivateRoute component={<Song />} />}
+        />
+        <Route
+          exact
+          path="/education"
+          element={<PrivateRoute component={<Education />} />}
         />
       </Routes>
     </div>

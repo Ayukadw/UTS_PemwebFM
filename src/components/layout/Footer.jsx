@@ -21,12 +21,12 @@ function Footer() {
       <Row className="just">
         <Col xs={24} md={12} lg={12}>
           <div className="copyright">
-            © 2024, made with
+            © 2025, made with
             {<HeartFilled />} by
             <a href="#pablo" className="font-weight-bold" target="_blank">
-              WebfmSI.com
+              404NotFound Team
             </a>
-            for a better point of sales management.
+            for a better grade of Pemrograman Web Berbasis Framework.
           </div>
         </Col>
       </Row>
