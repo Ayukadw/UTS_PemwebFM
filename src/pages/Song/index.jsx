@@ -38,7 +38,7 @@ const handleSubmit = () => {
   const play_description = InputPlaylist.getFieldValue("play_description");
 
   const formData = new FormData();
-  formData.append("play_title", play_name);
+  formData.append("play_name", play_name);
   formData.append("play_url", play_url);
   formData.append("play_thumbnail", play_thumbnail);
   formData.append("play_genre", play_genre);
@@ -107,7 +107,7 @@ const handleSubmit = () => {
     //ambil id yang telah diselect sesuai dengan card yang di click
     setIdSelected(record?.id_play);
     //sisipkan nilai nilai yang diselect ke form drawer
-    InputPlaylist.setFieldValue("play_title", record?.play_name);
+    InputPlaylist.setFieldValue("play_title", record?.play_title);
     InputPlaylist.setFieldValue("play_url", record?.play_url);
     InputPlaylist.setFieldValue("play_genre", record?.play_genre);
     InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
@@ -139,8 +139,19 @@ const handleSubmit = () => {
   }
 
   const[searchText, setSearchText] = useState("");
+  const handleSearch = (search) => {
+    setSearchText(search.toLowerCase());
+    // if (value.length > 0) {
+    //   const filteredData = dataSources.filter((item) =>
+    //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
+    //   );
+    //   setDataSources(filteredData);
+    // } else {
+    //   getDataPlaylist();
+    // }
+  };
 
-  const SongCount = dataSources.filter(
+  const musicCount = dataSources.filter(
   (item) => item?.play_genre?.toLowerCase() === "song"
   ).length;
 
@@ -211,13 +222,13 @@ const handleSubmit = () => {
               </Form>
              </Drawer>
 
-            <Title>Daftar Song</Title>
+            <Title>Daftar Music</Title>
             <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
-              Jumlah Playlist Song : {SongCount}
+              Jumlah Playlist music : {musicCount}
             </Text>
             <Input
               prefix={<SearchOutlined />}
-              placeholder="Cari judul Song"
+              placeholder="Cari judul Music"
               allowClear
               size="large"
               onChange={(e) => setSearchText(e.target.value)}
@@ -227,123 +238,123 @@ const handleSubmit = () => {
               <div>Sedang menunggu data</div>
             ) : (
            <List
-            grid={{
-              gutter: 16,
-              xs: 1,
-              sm: 1,
-              md: 2,
-              lg: 2,
-              xl: 2,
-            }}
-            dataSource={dataSourceFiltered ?? []}
-            pagination={{
-              pageSize: 6, 
-              showSizeChanger: false,
-            }}
-              renderItem={(item) => (
-          <List.Item key={item?.id_play}>
-          <Card
-            style={{
-              padding: 0,
-              borderRadius: 12,
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            }}
-            bodyStyle={{ padding: 0, width: "100%" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
-              {/* Thumbnail */}
-              <div style={{ flex: "0 0 126px" }}>
-                <img
-                  src={
-                    item?.play_thumbnail ||
-                    "https://via.placeholder.com/126x126.png?text=No+Image"
-                  }
-                  alt="Thumbnail"
-                  style={{
-                    width: 126,
-                    height: 126,
-                    objectFit: "cover",
-                  }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://via.placeholder.com/126x126.png?text=Broken";
-                  }}
-                />
-              </div>
-
-              {/* Judul & info */}
-              <div
-                style={{
-                  flex: 1,
-                  padding: "12px 24px",
+  grid={{
+    gutter: 16,
+    xs: 1,
+    sm: 1,
+    md: 2,
+    lg: 2,
+    xl: 2,
+  }}
+                dataSource={dataSourceFiltered ?? []}
+                pagination={{
+                  pageSize: 6, 
+                  showSizeChanger: false,
                 }}
-              >
-                <Title level={5} style={{ margin: 0 }}>
-                  {item?.play_name || "Tanpa Judul"}
-                </Title>
-                <Text type="secondary">
-                {item?.play_description || "-"}
-                </Text>
-                {/* Ikon aksi */}
-                <div style={{ marginTop: 12 }}>
-                  <Tooltip title="Edit">
-                    <EditOutlined
-                      style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
-                      onClick={() => handleDrawerEdit(item)}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Lihat">
-                    <a
-                      href={item?.play_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ marginRight: 16, fontSize: 18, }}
-                    >
-                      <SearchOutlined/>
-                    </a>
-                  </Tooltip>
-                  <Tooltip title="Hapus">
-                    <Popconfirm
-                      title="Hapus data"
-                      description={`Yakin menghapus data ${item?.play_name}?`}
-                      onConfirm={() => confirmDelete(item)}
-                      okText="Ya"
-                      cancelText="Tidak"
-                    >
-                      <DeleteOutlined
-                      style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
-                      />
-                    </Popconfirm>
-                  </Tooltip>
-                </div>
-              </div>
+                renderItem={(item) => (
+                  <List.Item key={item?.id_play}>
+  <Card
+    style={{
+      padding: 0,
+      borderRadius: 12,
+      overflow: "hidden",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    }}
+    bodyStyle={{ padding: 0, width: "100%" }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      {/* Thumbnail */}
+      <div style={{ flex: "0 0 126px" }}>
+        <img
+          src={
+            item?.play_thumbnail ||
+            "https://via.placeholder.com/126x126.png?text=No+Image"
+          }
+          alt="Thumbnail"
+          style={{
+            width: 126,
+            height: 126,
+            objectFit: "cover",
+          }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src =
+              "https://via.placeholder.com/126x126.png?text=Broken";
+          }}
+        />
+      </div>
 
-              {/* Tombol Play */}
-              <div
-                onClick={() => window.open(item?.play_url, "_blank")}
-              >
-                <PlayCircleFilled style={{ fontSize: 36}} />
-              </div>
-              <div 
-                style={{
-                  flex: "0 0 40px",
-                }}>
+      {/* Judul & info */}
+      <div
+        style={{
+          flex: 1,
+          padding: "12px 24px",
+        }}
+      >
+        <Title level={5} style={{ margin: 0 }}>
+          {item?.play_name || "Tanpa Judul"}
+        </Title>
+        <Text type="secondary">
+        {item?.play_description || "-"}
+        </Text>
+        {/* Ikon aksi */}
+        <div style={{ marginTop: 12 }}>
+          <Tooltip title="Edit">
+            <EditOutlined
+              style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
+              onClick={() => handleDrawerEdit(item)}
+            />
+          </Tooltip>
+          <Tooltip title="Lihat">
+            <a
+              href={item?.play_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ marginRight: 16, fontSize: 18, }}
+            >
+              <SearchOutlined/>
+            </a>
+          </Tooltip>
+          <Tooltip title="Hapus">
+            <Popconfirm
+              title="Hapus data"
+              description={`Yakin menghapus data ${item?.play_title}?`}
+              onConfirm={() => confirmDelete(item)}
+              okText="Ya"
+              cancelText="Tidak"
+            >
+              <DeleteOutlined
+              style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
+              />
+            </Popconfirm>
+          </Tooltip>
+        </div>
+      </div>
 
-              </div>
-                  </div>
-                </Card>
-              </List.Item>
+      {/* Tombol Play */}
+      <div
+  onClick={() => window.open(item?.play_url, "_blank")}
+>
+  <PlayCircleFilled style={{ fontSize: 36}} />
+</div>
+<div 
+style={{
+    flex: "0 0 40px",
+  }}>
+
+  </div>
+    </div>
+  </Card>
+</List.Item>
 
                 )}
               />
