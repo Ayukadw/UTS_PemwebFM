@@ -22,12 +22,10 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route exact path="/" element={<Dashboard />} />
-        {/* <Route exact path="/login" element={<LoginPage />} /> */}
         <Route
           exact
-          path="/dashboard"
-          element={<PrivateRoute component={<Dashboard />} />}
+          path="/"
+          element={<PrivateRoute component={<Playlist />} />}
         />
         <Route
           exact

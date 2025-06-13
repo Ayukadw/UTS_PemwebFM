@@ -84,7 +84,7 @@ function Sidenav({ color }) {
           >
             {Dasboard}
           </span>
-          <span className="label">Dashboard-Playlist</span>
+          <span className="label">All Playlist</span>
         </NavLink>
       ),
     },

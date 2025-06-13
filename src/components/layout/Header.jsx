@@ -192,14 +192,7 @@ function Header({
               </div>
             </div>
           </Drawer>
-          <Button
-            className="btn-sign-in"
-            type="text"
-            onClick={() => doLogout()}
-          >
-            <LogoutOutlined />
-            <span>Sign Out</span>
-          </Button>
+
         </Col>
       </Row>
     </>
