@@ -7,7 +7,7 @@ import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined, PlayC
 const { Text, Title } = Typography;
 
 const Music = () => {
-  const [dataSources, setDataSources] = useState([]);
+   const [dataSources, setDataSources] = useState([]);
   const [isLoading, setIsLoading] = useState([]);
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   const handleDrawer = () => {
@@ -70,30 +70,30 @@ const handleSubmit = () => {
   }, []);
 
   const getDataPlaylist = () => {
-  setIsLoading(true);
-  getData("/api/playlist/43")
-    .then((resp) => {
-      setIsLoading(false);
-
-      let playlists = [];
-
-      if (Array.isArray(resp)) {
-        playlists = resp;
-      } else if (Array.isArray(resp?.datas)) {
-        playlists = resp.datas;
-      }
-
-      const filtered = playlists.filter(
-        (item) => item?.play_genre?.toLowerCase() === "music"
-      );
-
-      setDataSources(filtered);
-    })
-    .catch((err) => {
-      setIsLoading(false);
-      console.log(err);
+    setIsLoading(true);
+    getData("/api/playlist/43")
+      .then((resp) => {
+        setIsLoading(false);
+  
+        let playlists = [];
+  
+        if (Array.isArray(resp)) {
+          playlists = resp;
+        } else if (Array.isArray(resp?.datas)) {
+          playlists = resp.datas;
+        }
+  
+        const filtered = playlists.filter(
+          (item) => item?.play_genre?.toLowerCase() === "music"
+        );
+  
+        setDataSources(filtered);
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        console.log(err);
     });
-};
+  };
 
 
   const [isEdit, setIsEdit] = useState(false);
@@ -107,7 +107,7 @@ const handleSubmit = () => {
     //ambil id yang telah diselect sesuai dengan card yang di click
     setIdSelected(record?.id_play);
     //sisipkan nilai nilai yang diselect ke form drawer
-    InputPlaylist.setFieldValue("play_title", record?.play_title);
+    InputPlaylist.setFieldValue("play_title", record?.play_name);
     InputPlaylist.setFieldValue("play_url", record?.play_url);
     InputPlaylist.setFieldValue("play_genre", record?.play_genre);
     InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
@@ -139,17 +139,6 @@ const handleSubmit = () => {
   }
 
   const[searchText, setSearchText] = useState("");
-  const handleSearch = (search) => {
-    setSearchText(search.toLowerCase());
-    // if (value.length > 0) {
-    //   const filteredData = dataSources.filter((item) =>
-    //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
-    //   );
-    //   setDataSources(filteredData);
-    // } else {
-    //   getDataPlaylist();
-    // }
-  };
 
   const musicCount = dataSources.filter(
   (item) => item?.play_genre?.toLowerCase() === "music"
@@ -234,6 +223,8 @@ const handleSubmit = () => {
               onChange={(e) => setSearchText(e.target.value)}
             />
             <div style={{ marginBottom: 16 }}> </div>
+
+            < divider style={{ margin: "16px 0" }} />
             {isLoading ? (
               <div>Sedang menunggu data</div>
             ) : (
@@ -308,13 +299,13 @@ const handleSubmit = () => {
         </Text>
         {/* Ikon aksi */}
         <div style={{ marginTop: 12 }}>
-          <Tooltip title="Edit">
+          <Tooltip>
             <EditOutlined
-              style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
+              style={{ fontSize: 18, marginRight: 16 }}
               onClick={() => handleDrawerEdit(item)}
             />
           </Tooltip>
-          <Tooltip title="Lihat">
+          <Tooltip>
             <a
               href={item?.play_url}
               target="_blank"
@@ -324,16 +315,16 @@ const handleSubmit = () => {
               <SearchOutlined/>
             </a>
           </Tooltip>
-          <Tooltip title="Hapus">
+          <Tooltip>
             <Popconfirm
               title="Hapus data"
-              description={`Yakin menghapus data ${item?.play_title}?`}
+              description={`Apakah kamu yakin menghapus data ${item?.play_name}?`}
               onConfirm={() => confirmDelete(item)}
               okText="Ya"
               cancelText="Tidak"
             >
               <DeleteOutlined
-              style={{ fontSize: 18, marginRight: 16, cursor: "pointer" }}
+              style={{ fontSize: 18, marginRight: 16}}
               />
             </Popconfirm>
           </Tooltip>
