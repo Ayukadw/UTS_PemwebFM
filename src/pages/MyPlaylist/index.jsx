@@ -1,0 +1,341 @@
+import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select} from "antd";
+import { useEffect, useState } from "react";
+import {deleteData, getData, sendData} from "../../utils/api"
+import { List } from "antd/lib";
+import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined} from '@ant-design/icons';
+
+const { Title, Text } = Typography;
+
+const Playlist = () => {
+  const [dataSources, setDataSources] = useState([]);
+  const [isLoading, setIsLoading] = useState([]);
+  const [isOpenDrawer, setIsOpenDrawer] = useState(false);
+  const handleDrawer = () => {
+  setIsOpenDrawer(true);
+  };
+  const onCloseDrawer = () => {
+    if (isEdit) {
+      setIsEdit(false);
+      setIdSelected(null);
+    }
+    setIsOpenDrawer(false);
+    InputPlaylist.resetFields();
+  };
+  const [api, contextHolder] = notification.useNotification();
+  const openNotificationWithIcon = (type, title, msg) => {
+    api[type]({
+      message: title,
+      description: msg,
+    });
+  };
+
+const [InputPlaylist] = Form.useForm();
+const handleSubmit = () => {
+  const play_name = InputPlaylist.getFieldValue("play_title");
+  const play_url = InputPlaylist.getFieldValue("play_url");
+  const play_genre = InputPlaylist.getFieldValue("play_genre");
+  const play_thumbnail = InputPlaylist.getFieldValue("play_thumbnail");
+  const play_description = InputPlaylist.getFieldValue("play_description");
+
+  const formData = new FormData();
+  formData.append("play_name", play_name);
+  formData.append("play_url", play_url);
+  formData.append("play_thumbnail", play_thumbnail);
+  formData.append("play_genre", play_genre);
+  formData.append("play_description", play_description);
+
+  const url = isEdit ? `/api/playlist/update/${idSelected}` : "/api/playlist/43";
+  const msg = isEdit ? "Sukses memperbarui data" : "Sukses menambah data";
+
+  sendData(url, formData)
+    .then((resp) => {
+      if (resp?.datas) {
+        openNotificationWithIcon("success", "Data Playlist", msg);
+        getDataPlaylist();
+        InputPlaylist.resetFields();
+        onCloseDrawer();
+      } else {
+        openNotificationWithIcon("error", "Data Playlist", "Data gagal dikirim");
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      openNotificationWithIcon("error", "Server Error", "Gagal mengirim data");
+    });
+};
+
+
+  useEffect(() => {
+    getDataPlaylist();
+  }, []);
+
+  const getDataPlaylist = () => {
+    setIsLoading(true)
+    getData("/api/playlist/43")
+      .then((resp) => {
+        setIsLoading(false);
+        console.log("DATA DARI API:", resp); // Tambahkan ini untuk debug
+
+        // Solusi utama: pastikan isinya array
+        if (Array.isArray(resp)) {
+          setDataSources(resp);
+        } else if (Array.isArray(resp?.datas)) {
+          setDataSources(resp.datas); // <- ini kalau data ada di dalam "datas"
+        } else {
+          console.warn("Format data tidak dikenali:", resp);
+          setDataSources([]);
+        }
+      })
+      .catch((err) => {
+        setIsLoading(false)
+        console.log(err)
+      });
+  };
+
+
+  const [isEdit, setIsEdit] = useState(false);
+  const [idSelected, setIdSelected] = useState(null);
+
+  const handleDrawerEdit = (record) => {
+    //buka drawer
+    setIsOpenDrawer(true);
+    //buat isEdit menjadi true, menandakan kita sedang mode edit pada Drawer
+    setIsEdit(true);
+    //ambil id yang telah diselect sesuai dengan card yang di click
+    setIdSelected(record?.id_play);
+    //sisipkan nilai nilai yang diselect ke form drawer
+    InputPlaylist.setFieldValue("play_title", record?.play_name);
+    InputPlaylist.setFieldValue("play_url", record?.play_url);
+    InputPlaylist.setFieldValue("play_genre", record?.play_genre);
+    InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
+    InputPlaylist.setFieldValue("play_description", record?.play_description || "");
+
+  };
+
+  // const [isDelete, setIsDelete] = useState(false);
+  let namaDrawer = isEdit ? "Edit" : "Add";
+
+  const confirmDelete = (record) => {
+    //implementasi fungsi delete
+    let url = `/api/playlist/${record?.id_play}`;
+    let params = new URLSearchParams();
+    params.append("id", record?.id_play);
+    deleteData(url, params)
+      .then((resp) => {
+        if (resp?.status == 200) {
+          getDataPlaylist();
+          openNotificationWithIcon("success", "Hapus Data", "Sukses menghapus data")
+        } else {
+          openNotificationWithIcon("error", "Hapus Data", "Gagal menghapus data")
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        openNotificationWithIcon("error", "Hapus Data", "Gagal menghapus data")
+      });
+  }
+
+  // State untuk filter deskripsi
+  const [filterDescription, setFilterDescription] = useState("semua");
+
+  // PERBAIKAN: Menggunakan includes() untuk mencari kata berdasarkan filter yang dipilih
+  const PlaylistCount = dataSources.filter(
+    (item) => {
+      if (filterDescription === "semua") return true; // Jika "semua", hitung semua data
+      const description = item?.play_description || "";
+      return description.toLowerCase().includes(filterDescription.toLowerCase());
+    }
+  ).length;
+
+  const[searchText, setSearchText] = useState("");
+
+  let dataSourceFiltered = Array.isArray(dataSources)
+    ? dataSources.filter((item) => {
+        // Filter berdasarkan search text (judul)
+        const matchesSearch = (item?.play_name || "").toLowerCase().includes(searchText.toLowerCase());
+        
+        // Filter berdasarkan deskripsi yang dipilih
+        let matchesFilter = true; // Default true untuk "semua"
+        if (filterDescription !== "semua") {
+          const description = item?.play_description || "";
+          matchesFilter = description.toLowerCase().includes(filterDescription.toLowerCase());
+        }
+        
+        // Kedua kondisi harus terpenuhi
+        return matchesSearch && matchesFilter;
+      })
+    : [];
+
+  const { Option } = Select;
+
+  return (
+    <div className="layout-content">
+      {contextHolder}
+      <Row gutter={[24, 0]}>
+        <Col xs={23} className="mb-24">
+          <Card bordered={false} className="circlebox h-full w-full">
+            <FloatButton
+              shape="circle"
+              type="primary"
+              style={{ insetInlineEnd: 94 }}
+              icon={<PlusCircleOutlined />}
+              onClick={() => {
+                handleDrawer()
+              }}
+            />
+            <Drawer title={`${namaDrawer} Data`} onClose={onCloseDrawer} open={isOpenDrawer} extra={
+              <Button type="primary" onClick={()=> handleSubmit()}>
+                {isEdit ? "Update" : "Add"}
+              </Button>}>
+              <Form form={InputPlaylist} name="basic" layout="vertical" autoComplete="off">
+                <Form.Item
+                  label="Judul"
+                  name="play_title"
+                  rules={[{ required: true }]}
+                >
+                  <Input placeholder="Masukkan judul playlist" />
+                </Form.Item>
+                <Form.Item
+                  label="URL Video"
+                  name="play_url"
+                  rules={[{ required: true }]}
+                >
+                  <Input placeholder="https://youtube.com/..." />
+                </Form.Item>
+                <Form.Item
+                  label="Genre"
+                  name="play_genre"
+                  rules={[{ required: true }]}
+                >
+                  <Select placeholder="Pilih genre">
+                    <Option value="music">Music</Option>
+                    <Option value="song">Song</Option>
+                    <Option value="movie">Movie</Option>
+                    <Option value="education">Education</Option>
+                    <Option value="others">Others</Option>
+                  </Select>
+                </Form.Item>
+                <Form.Item
+                  label="Thumbnail URL"
+                  name="play_thumbnail"
+                  rules={[{ required: true }]}
+                >
+                  <Input placeholder="https://link-to-thumbnail.jpg" />
+                </Form.Item>
+                <Form.Item
+                  label="Deskripsi"
+                  name="play_description"
+                >
+                  <Input.TextArea placeholder="Tulis deskripsi playlist" />
+                </Form.Item>
+              </Form>
+             </Drawer>
+
+            <Title>My Playlist</Title>           
+            <Input
+              prefix={<SearchOutlined />}
+              placeholder="Cari judul playlist"
+              allowClear
+              size="large"
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <div style={{ marginBottom: 16 }}>
+            </div>
+            {["semua", "adi", "ardo", "ayuk", "ega"].map((keyword) => (
+                <Button
+                    key={keyword}
+                    type={filterDescription === keyword ? "primary" : "default"}
+                    style={{ marginRight: 10, marginBottom: 4 }}
+                    onClick={() => setFilterDescription(keyword)}
+                >
+                    {keyword.charAt(0).toUpperCase() + keyword.slice(1)}
+                </Button>
+                ))}
+
+            <div style={{ marginBottom: 16 }}> </div>
+            {isLoading ? (
+              <div>Sedang menunggu data</div>
+            ) : (
+              <List
+                grid={{
+                  gutter: 16,
+                  xs: 1,
+                  sm: 1,
+                  md: 2,
+                  lg: 3,
+                  xl: 3,
+                }}
+                dataSource={dataSourceFiltered ?? []}
+                renderItem={(item) => (
+                  <List.Item key={item?.id_play}>
+                    <Card
+                      cover={
+                        <img
+                          src={
+                            item?.play_thumbnail ||
+                            "https://via.placeholder.com/300x150.png?text=No+Image"
+                          }
+                          alt="Thumbnail"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src =
+                              "https://via.placeholder.com/300x150.png?text=Broken";
+                          }}
+                        />
+                      }
+                      actions={[
+                        <EditOutlined
+                          key="edit"
+                          onClick={() => handleDrawerEdit(item)}
+                        />,
+                        <a
+                          key="view"
+                          href={item?.play_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <SearchOutlined />
+                        </a>,
+                      <Popconfirm
+                        key={item?.id_play}  
+                        title="Hapus data"
+                        description={`Apakah kamu yakin menghapus data ${item?.play_name}?`}
+                        onConfirm={() => confirmDelete(item)}
+                        okText="Ya"
+                        cancelText="Tidak"
+                      >
+                        <DeleteOutlined key={item?.id_play} />
+                      </Popconfirm>]}
+                    >
+                      <Card.Meta
+                        title={item?.play_name || "Tanpa Judul"}
+                        description={
+                          <>
+                            <Text>Genre: {item?.play_genre || "-"}</Text>
+                            <br />
+                            <Text>{item?.play_description || "-"}</Text>
+                            <br />
+                            <a
+                              href={item?.play_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Tonton Video
+                            </a>
+                          </>
+                        }
+                      />
+                    </Card>
+                  </List.Item>
+                )}
+              />
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </div>
+
+  );
+};
+
+export default Playlist;

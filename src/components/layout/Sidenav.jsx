@@ -88,6 +88,22 @@ function Sidenav({ color }) {
         </NavLink>
       ),
     },
+            {
+      key: "/myplaylist",
+      label: (
+        <NavLink to="/myplaylist">
+          <span
+            className="icon"
+            style={{
+              backgroundColor: selectedKey === "MyPlaylist" ? "#f0f2f5" : "",
+            }}
+          >
+            {Dasboard}
+          </span>
+          <span className="label">MyPlaylist</span>
+        </NavLink>
+      ),
+    },
     {
       key: "/education",
       label: (
@@ -137,22 +153,6 @@ function Sidenav({ color }) {
       ),
     },
     {
-      key: "/others",
-      label: (
-        <NavLink to="/others">
-          <span
-            className="icon"
-            style={{
-              backgroundColor: selectedKey === "others" ? "#f0f2f5" : "",
-            }}
-          >
-            {Dasboard}
-          </span>
-          <span className="label">Others</span>
-        </NavLink>
-      ),
-    },
-    {
       key: "/song",
       label: (
         <NavLink to="/song">
@@ -165,6 +165,23 @@ function Sidenav({ color }) {
             <FileImageOutlined />
           </span>
           <span className="label">Song</span>
+        </NavLink>
+      ),
+    },
+
+    {
+      key: "/others",
+      label: (
+        <NavLink to="/others">
+          <span
+            className="icon"
+            style={{
+              backgroundColor: selectedKey === "others" ? "#f0f2f5" : "",
+            }}
+          >
+            {Dasboard}
+          </span>
+          <span className="label">Others</span>
         </NavLink>
       ),
     },

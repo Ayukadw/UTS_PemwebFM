@@ -17,6 +17,7 @@ import Movie from "./pages/Movie";
 import Others from "./pages/Others";
 import Song from "./pages/Song";
 import Education from "./pages/Education";
+import MyPlaylist from "./pages/MyPlaylist"
 
 function App() {
   return (
@@ -56,6 +57,11 @@ function App() {
           exact
           path="/education"
           element={<PrivateRoute component={<Education />} />}
+        />
+        <Route
+          exact
+          path="/myplaylist"
+          element={<PrivateRoute component={<MyPlaylist />} />}
         />
       </Routes>
     </div>
