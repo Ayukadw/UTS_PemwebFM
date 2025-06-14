@@ -14,10 +14,14 @@ const Playlist = () => {
   const handleDrawer = () => {
   setIsOpenDrawer(true);
   };
-  const onCloseDrawer = () => {
+const onCloseDrawer = () => {
     if (isEdit) {
       setIsEdit(false);
       setIdSelected(null);
+    }
+    if (isAddToPlaylist) {
+      setIsAddToPlaylist(false);
+      setSelectedPlaylist("");
     }
     setIsOpenDrawer(false);
     InputPlaylist.resetFields();
@@ -28,6 +32,27 @@ const Playlist = () => {
       message: title,
       description: msg,
     });
+  };
+
+    // Fungsi untuk membersihkan deskripsi dari info playlist
+  const cleanDescription = (description) => {
+    if (!description) return "-";
+    
+    // Hapus semua pattern playlist (global flag untuk menghapus semua kemunculan)
+    let cleanedDescription = description
+      // Hapus pattern "| Playlist nama" (bisa berulang)
+      .replace(/\s*\|\s*Playlist\s+\w+/gi, '')
+      // Hapus pattern "Added to All Playlists" di awal atau setelah |
+      .replace(/^Added to All Playlists/i, '')
+      .replace(/\s*\|\s*Added to All Playlists/gi, '')
+      // Hapus pipe (|) yang tersisa di awal atau akhir
+      .replace(/^\s*\|\s*/, '')
+      .replace(/\s*\|\s*$/, '')
+      // Hapus multiple pipes yang berdekatan
+      .replace(/\s*\|\s*\|\s*/g, ' | ')
+      .trim();
+    
+    return cleanedDescription || "-";
   };
 
 const [InputPlaylist] = Form.useForm();
@@ -45,8 +70,8 @@ const handleSubmit = () => {
   formData.append("play_genre", play_genre);
   formData.append("play_description", play_description);
 
-  const url = isEdit ? `/api/playlist/update/${idSelected}` : "/api/playlist/43";
-  const msg = isEdit ? "Sukses memperbarui data" : "Sukses menambah data";
+  const url = isEdit || isAddToPlaylist ? `/api/playlist/update/${idSelected}` : "/api/playlist/43";
+  const msg = isEdit ? "Sukses memperbarui data" : isAddToPlaylist ? "Sukses menambahkan ke playlist" : "Sukses menambah data";
 
   sendData(url, formData)
     .then((resp) => {
@@ -96,6 +121,8 @@ const handleSubmit = () => {
 
   const [isEdit, setIsEdit] = useState(false);
   const [idSelected, setIdSelected] = useState(null);
+  const [isAddToPlaylist, setIsAddToPlaylist] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState("");
 
   const handleDrawerEdit = (record) => {
     //buka drawer
@@ -110,11 +137,10 @@ const handleSubmit = () => {
     InputPlaylist.setFieldValue("play_genre", record?.play_genre);
     InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
     InputPlaylist.setFieldValue("play_description", record?.play_description || "");
-
   };
 
   // const [isDelete, setIsDelete] = useState(false);
-  let namaDrawer = isEdit ? "Edit" : "Add";
+  let namaDrawer = isEdit ? "Edit" : isAddToPlaylist ? "Add to My Playlist" : "Add";
 
   const confirmDelete = (record) => {
     //implementasi fungsi delete
@@ -136,12 +162,40 @@ const handleSubmit = () => {
       });
   }
 
-  const[searchText, setSearchText] = useState("");
+    const handleAddToPlaylist = (record) => {
+    //buka drawer
+    setIsOpenDrawer(true);
+    //buat isAddToPlaylist menjadi true, menandakan kita sedang mode add to playlist
+    setIsAddToPlaylist(true);
+    setIsEdit(false);
+    //ambil id yang telah diselect sesuai dengan card yang di click
+    setIdSelected(record?.id_play);
+    //sisipkan nilai nilai yang diselect ke form drawer
+    InputPlaylist.setFieldValue("play_title", record?.play_name);
+    InputPlaylist.setFieldValue("play_url", record?.play_url);
+    InputPlaylist.setFieldValue("play_genre", record?.play_genre);
+    InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
+    InputPlaylist.setFieldValue("play_description", record?.play_description || "");
+  };
 
+  const [filterDescription, setFilterDescription] = useState("semua");
+
+  const[searchText, setSearchText] = useState("");
   let dataSourceFiltered = Array.isArray(dataSources)
-    ? dataSources.filter((item) =>
-        (item?.play_name || "").toLowerCase().includes(searchText.toLowerCase())
-      )
+    ? dataSources.filter((item) => {
+        // Filter berdasarkan search text (judul)
+        const matchesSearch = (item?.play_name || "").toLowerCase().includes(searchText.toLowerCase());
+        
+        // Filter berdasarkan deskripsi yang dipilih
+        let matchesFilter = true; // Default true untuk "semua"
+        if (filterDescription !== "semua") {
+          const description = item?.play_description || "";
+          matchesFilter = description.toLowerCase().includes(filterDescription.toLowerCase());
+        }
+        
+        // Kedua kondisi harus terpenuhi
+        return matchesSearch && matchesFilter;
+      })
     : [];
 
   const { Option } = Select;
@@ -175,22 +229,50 @@ const handleSubmit = () => {
             />
             <Drawer title={`${namaDrawer} Data`} onClose={onCloseDrawer} open={isOpenDrawer} extra={
               <Button type="primary" onClick={()=> handleSubmit()}>
-                {isEdit ? "Update" : "Add"}
+                {isEdit ? "Update" : isAddToPlaylist ? "Add to Playlist" : "Add"}
               </Button>}>
+              {/* Form Add to My Playlist - hanya muncul jika mode add to playlist */}
+                {isAddToPlaylist && (
+                  <>
+                    <Title level={5}>Add to My Playlist</Title>
+                    <Form.Item
+                      label="Pilih Playlist"
+                      name="my_playlist"
+                      rules={[{ required: true, message: 'Pilih playlist terlebih dahulu!' }]}
+                    >
+                      <Select 
+                        placeholder="Pilih playlist tujuan"
+                        value={selectedPlaylist}
+                        onChange={(value) => setSelectedPlaylist(value)}
+                      >
+                        <Option value="adi">Adi</Option>
+                        <Option value="ardo">Ardo</Option>
+                        <Option value="ayuk">Ayuk</Option>
+                        <Option value="ega">Ega</Option>
+                      </Select>
+                    </Form.Item>
+                  </>
+                )}
               <Form form={InputPlaylist} name="basic" layout="vertical" autoComplete="off">
                 <Form.Item
                   label="Judul"
                   name="play_title"
                   rules={[{ required: true }]}
                 >
-                  <Input placeholder="Masukkan judul playlist" />
+                  <Input 
+                    placeholder="Masukkan judul playlist" 
+                    disabled={isAddToPlaylist}
+                  />
                 </Form.Item>
                 <Form.Item
                   label="URL Video"
                   name="play_url"
                   rules={[{ required: true }]}
                 >
-                  <Input placeholder="https://youtube.com/..." />
+                  <Input 
+                    placeholder="https://youtube.com/..." 
+                    disabled={isAddToPlaylist}
+                  />
                 </Form.Item>
                 <Form.Item
                   label="Genre"
@@ -210,14 +292,21 @@ const handleSubmit = () => {
                   name="play_thumbnail"
                   rules={[{ required: true }]}
                 >
-                  <Input placeholder="https://link-to-thumbnail.jpg" />
+                  <Input 
+                    placeholder="https://link-to-thumbnail.jpg" 
+                    disabled={isAddToPlaylist}
+                  />
                 </Form.Item>
                 <Form.Item
                   label="Deskripsi"
                   name="play_description"
                 >
-                  <Input.TextArea placeholder="Tulis deskripsi playlist" />
+                  <Input.TextArea 
+                    placeholder="Tulis deskripsi playlist" 
+                    disabled={isAddToPlaylist}
+                  />
                 </Form.Item>
+                
               </Form>
              </Drawer>
 
@@ -280,14 +369,15 @@ const handleSubmit = () => {
                           cancelText="Tidak"
                         >
                           <DeleteOutlined />
-                        </Popconfirm>
+                        </Popconfirm>,
+                        <PlusCircleOutlined key="add-to-playlist" onClick={() => handleAddToPlaylist(item)} />
                       ]}
                     >
                       <Card.Meta
                         title={item?.play_name}
                         description={
                           <div className="description-container">
-                            <Text ellipsis={{ rows: 2 }}>{item?.play_description || "Tidak ada deskripsi"}</Text>
+                            <Text ellipsis={{ rows: 2 }}>{cleanDescription(item?.play_description)}</Text>
                           </div>
                         }
                       />

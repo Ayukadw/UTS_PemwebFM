@@ -34,6 +34,28 @@ const Music = () => {
     });
   };
 
+   // Fungsi untuk membersihkan deskripsi dari info playlist
+  const cleanDescription = (description) => {
+    if (!description) return "-";
+    
+    // Hapus semua pattern playlist (global flag untuk menghapus semua kemunculan)
+    let cleanedDescription = description
+      // Hapus pattern "| Playlist nama" (bisa berulang)
+      .replace(/\s*\|\s*Playlist\s+\w+/gi, '')
+      // Hapus pattern "Added to All Playlists" di awal atau setelah |
+      .replace(/^Added to All Playlists/i, '')
+      .replace(/\s*\|\s*Added to All Playlists/gi, '')
+      // Hapus pipe (|) yang tersisa di awal atau akhir
+      .replace(/^\s*\|\s*/, '')
+      .replace(/\s*\|\s*$/, '')
+      // Hapus multiple pipes yang berdekatan
+      .replace(/\s*\|\s*\|\s*/g, ' | ')
+      .trim();
+    
+    return cleanedDescription || "-";
+  };
+
+
   const [InputPlaylist] = Form.useForm();
   const handleSubmit = () => {
     const play_name = InputPlaylist.getFieldValue("play_title");
@@ -143,6 +165,22 @@ const Music = () => {
         openNotificationWithIcon("error", "Hapus Data", "Gagal menghapus data")
       });
   }
+
+    const handleAddToPlaylist = (record) => {
+    //buka drawer
+    setIsOpenDrawer(true);
+    //buat isAddToPlaylist menjadi true, menandakan kita sedang mode add to playlist
+    setIsAddToPlaylist(true);
+    setIsEdit(false);
+    //ambil id yang telah diselect sesuai dengan card yang di click
+    setIdSelected(record?.id_play);
+    //sisipkan nilai nilai yang diselect ke form drawer
+    InputPlaylist.setFieldValue("play_title", record?.play_name);
+    InputPlaylist.setFieldValue("play_url", record?.play_url);
+    InputPlaylist.setFieldValue("play_genre", record?.play_genre);
+    InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
+    InputPlaylist.setFieldValue("play_description", record?.play_description || "");
+  };
 
   const [filterDescription, setFilterDescription] = useState("semua");
 
@@ -316,7 +354,7 @@ const Music = () => {
                             className="play-button"
                             onClick={() => window.open(item?.play_url, '_blank')}
                           >
-                            Tonton
+                            Dengarkan
                           </Button>
                         </div>
                       }
@@ -331,14 +369,15 @@ const Music = () => {
                           cancelText="Tidak"
                         >
                           <DeleteOutlined />
-                        </Popconfirm>
+                        </Popconfirm>,
+                        <PlusCircleOutlined key="add-to-playlist" onClick={() => handleAddToPlaylist(item)} />
                       ]}
                     >
                       <Card.Meta
                         title={item?.play_name}
                         description={
                           <div className="description-container">
-                            <Text ellipsis={{ rows: 2 }}>{item?.play_description || "Tidak ada deskripsi"}</Text>
+                            <Text ellipsis={{ rows: 2 }}>{cleanDescription(item?.play_description)}</Text>
                           </div>
                         }
                       />
