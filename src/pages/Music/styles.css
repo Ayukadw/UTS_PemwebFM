@@ -4,6 +4,35 @@
   padding: 24px;
 }
 
+.scroll-on-hover {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 12px;
+  box-sizing: border-box;
+  transition: all 0.3s ease-in-out;
+}
+/* Scrollbar track (jalur) */
+.scroll-on-hover::-webkit-scrollbar {
+  height: 8px;
+}
+
+/* Scrollbar thumb (batangnya) default: transparan */
+.scroll-on-hover::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Saat hover: scrollbar jadi solid */
+.scroll-on-hover:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3); /* ubah sesuai preferensi warna */
+}
+
+/* Track transparan agar thumb-nya saja yang terlihat */
+.scroll-on-hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .circlebox {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;

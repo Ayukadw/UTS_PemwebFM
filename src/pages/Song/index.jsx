@@ -320,10 +320,6 @@ const Song = () => {
               </Form>
              </Drawer>
 
-            <Title>Daftar Music</Title>
-            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
-              Jumlah Playlist music : {musicCount}
-            </Text>
             <div style={{ marginBottom: 16 }}> </div>
             {isLoading ? (
               <div className="loading-container">

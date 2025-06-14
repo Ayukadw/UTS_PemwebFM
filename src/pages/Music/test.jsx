@@ -48,7 +48,7 @@ const Music = () => {
       // Hapus pattern "Added to All Playlists"
       .replace(/^Added to All Playlists/i, '')
       .replace(/\s*\|\s*Added to All Playlists/gi, '')
-      // Hapus pattern "Song Type: namatype" (bisa berulang)
+      // Hapus pattern "Song Type: namatype"
       .replace(/\s*\|\s*Song Type:\s*\w+/gi, '')
       .replace(/^Song Type:\s*\w+/i, '')
       // Hapus pipe (|) yang tersisa di awal atau akhir
@@ -61,25 +61,11 @@ const Music = () => {
     return cleanedDescription || "-";
   };
 
-  // Fungsi untuk mengekstrak SEMUA song types dari deskripsi
-  const extractAllSongTypes = (description) => {
-    if (!description) return [];
-    
-    // Cari semua pattern "Song Type: namatype" menggunakan regex global
-    const matches = description.match(/Song Type:\s*(\w+)/gi);
-    if (!matches) return [];
-    
-    // Extract semua song types dan convert ke lowercase untuk konsistensi
-    return matches.map(match => {
-      const songType = match.replace(/Song Type:\s*/i, '').trim();
-      return songType.toLowerCase();
-    });
-  };
-
-  // Fungsi untuk mengekstrak song type pertama dari deskripsi (untuk backward compatibility)
+  // Fungsi untuk mengekstrak song type dari deskripsi
   const extractSongType = (description) => {
-    const allTypes = extractAllSongTypes(description);
-    return allTypes.length > 0 ? allTypes[0] : null;
+    if (!description) return null;
+    const match = description.match(/Song Type:\s*(\w+)/i);
+    return match ? match[1] : null;
   };
 
   // Fungsi untuk mengekstrak playlist info dari deskripsi
@@ -196,7 +182,7 @@ const Music = () => {
     InputPlaylist.setFieldValue("play_url", record?.play_url);
     InputPlaylist.setFieldValue("play_genre", record?.play_genre);
     InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
-    InputPlaylist.setFieldValue("play_description", record?.play_description);
+    InputPlaylist.setFieldValue("play_description", cleanDescription(record?.play_description));
     InputPlaylist.setFieldValue("play_song_type", songType);
   };
 
@@ -234,7 +220,7 @@ const Music = () => {
     InputPlaylist.setFieldValue("play_url", record?.play_url);
     InputPlaylist.setFieldValue("play_genre", record?.play_genre);
     InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
-    InputPlaylist.setFieldValue("play_description", record?.play_description);
+    InputPlaylist.setFieldValue("play_description", cleanDescription(record?.play_description));
     InputPlaylist.setFieldValue("play_song_type", songType);
   };
 
@@ -254,12 +240,11 @@ const Music = () => {
           matchesFilter = description.toLowerCase().includes(filterDescription.toLowerCase());
         }
         
-        // Filter berdasarkan song type - DIPERBAIKI UNTUK MULTIPLE SONG TYPES
+        // Filter berdasarkan song type
         let matchesSongType = true;
         if (filterSongType !== "semua") {
-          const allSongTypes = extractAllSongTypes(item?.play_description);
-          // Cek apakah filterSongType ada dalam array allSongTypes
-          matchesSongType = allSongTypes.includes(filterSongType.toLowerCase());
+          const songType = extractSongType(item?.play_description);
+          matchesSongType = songType && songType.toLowerCase() === filterSongType.toLowerCase();
         }
         
         return matchesSearch && matchesFilter && matchesSongType;
@@ -283,7 +268,6 @@ const Music = () => {
     { value: "alternative", label: "Alternative" },
     { value: "indie", label: "Indie" }
   ];
-  
 
   return (
     <div className="layout-content">
@@ -293,7 +277,7 @@ const Music = () => {
           <Card bordered={false} className="circlebox h-full w-full">
             <div className="header-section">
               <Title level={2} className="gradient-text">Daftar Music</Title>
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ marginBottom: '16px' }}>
                 <Input
                   prefix={<SearchOutlined />}
                   placeholder="Cari judul music"
@@ -301,64 +285,77 @@ const Music = () => {
                   size="large"
                   className="search-input"
                   onChange={(e) => setSearchText(e.target.value)}
-                  style={{ flex: 1 }}
+                  style={{ marginBottom: '16px' }}
                 />
+                
+                {/* Filter Buttons */}
+                <div style={{ marginBottom: '8px' }}>
+                  <Text strong style={{ marginRight: '12px', color: '#666' }}>Filter Jenis Musik:</Text>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '8px',
+                  marginBottom: '8px',
+                  overflowX: 'auto',
+                  overflowY: 'hidden',
+                  paddingBottom: '4px',
+                  scrollbarWidth: 'thin',
+                  WebkitOverflowScrolling: 'touch',
+                  msOverflowStyle: 'none', /* IE and Edge */
+                  scrollbarWidth: 'none', /* Firefox */
+                }}
+                // Hide scrollbar for Chrome, Safari and Opera
+                onLoad={(e) => {
+                  const style = document.createElement('style');
+                  style.textContent = `
+                    .filter-container::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `;
+                  document.head.appendChild(style);
+                }}
+                className="filter-container"
+                >
+                  <Button 
+                    type={filterSongType === "semua" ? "primary" : "default"}
+                    size="small"
+                    onClick={() => setFilterSongType("semua")}
+                    style={{
+                      borderRadius: '16px',
+                      fontSize: '12px',
+                      height: '28px',
+                      minWidth: '60px',
+                      whiteSpace: 'nowrap',
+                      background: filterSongType === "semua" ? '#1890ff' : '#f5f5f5',
+                      borderColor: filterSongType === "semua" ? '#1890ff' : '#d9d9d9',
+                      color: filterSongType === "semua" ? '#fff' : '#666'
+                    }}
+                  >
+                    Semua
+                  </Button>
+                  {songTypes.map(type => (
+                    <Button 
+                      key={type.value}
+                      type={filterSongType === type.value ? "primary" : "default"}
+                      size="small"
+                      onClick={() => setFilterSongType(type.value)}
+                      style={{
+                        borderRadius: '16px',
+                        fontSize: '12px',
+                        height: '28px',
+                        minWidth: 'fit-content',
+                        whiteSpace: 'nowrap',
+                        background: filterSongType === type.value ? '#1890ff' : '#f5f5f5',
+                        borderColor: filterSongType === type.value ? '#1890ff' : '#d9d9d9',
+                        color: filterSongType === type.value ? '#fff' : '#666'
+                      }}
+                    >
+                      {type.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
-  {/* Filter Buttons */}
-<div style={{ marginBottom: '8px' }}>
-  <Text strong style={{ marginRight: '12px', color: '#666' }}>
-    Filter Jenis Musik:
-  </Text>
-</div>
-
-<div 
-  className="scroll-on-hover"
-  style={{ 
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '8px',
-  }}
->
-  <Button 
-    type={filterSongType === "semua" ? "primary" : "default"}
-    size="small"
-    onClick={() => setFilterSongType("semua")}
-    style={{
-      borderRadius: '16px',
-      fontSize: '12px',
-      height: '28px',
-      minWidth: '60px',
-      whiteSpace: 'nowrap',
-      background: filterSongType === "semua" ? '#1890ff' : '#f5f5f5',
-      borderColor: filterSongType === "semua" ? '#1890ff' : '#d9d9d9',
-      color: filterSongType === "semua" ? '#fff' : '#666'
-    }}
-  >
-    Semua
-  </Button>
-  {songTypes.map(type => (
-    <Button 
-      key={type.value}
-      type={filterSongType === type.value ? "primary" : "default"}
-      size="small"
-      onClick={() => setFilterSongType(type.value)}
-      style={{
-        borderRadius: '16px',
-        fontSize: '12px',
-        height: '28px',
-        minWidth: 'fit-content',
-        whiteSpace: 'nowrap',
-        background: filterSongType === type.value ? '#1890ff' : '#f5f5f5',
-        borderColor: filterSongType === type.value ? '#1890ff' : '#d9d9d9',
-        color: filterSongType === type.value ? '#fff' : '#666'
-      }}
-    >
-      {type.label}
-    </Button>
-  ))}
-</div>
-
             <FloatButton
               shape="circle"
               type="primary"
@@ -487,10 +484,8 @@ const Music = () => {
                 }}
                 dataSource={dataSourceFiltered ?? []}
                 renderItem={(item) => {
-                  const allSongTypes = extractAllSongTypes(item?.play_description);
-                  const songTypeLabels = allSongTypes.map(type => {
-                    return songTypes.find(st => st.value === type)?.label || type;
-                  });
+                  const songType = extractSongType(item?.play_description);
+                  const songTypeLabel = songTypes.find(type => type.value === songType?.toLowerCase())?.label || songType;
                   
                   return (
                     <List.Item key={item?.id_play}>
@@ -513,14 +508,18 @@ const Music = () => {
                               }}
                             />
                             <div className="genre-tag">{item?.play_genre}</div>
-                            {/* Tampilkan semua song types sebagai tags */}
-                            {songTypeLabels.length > 0 && (
-                              <div className="song-type-tags">
-                                {songTypeLabels.map((label, index) => (
-                                  <span key={index} className="song-type-tag">
-                                    {label}
-                                  </span>
-                                ))}
+                            {songType && (
+                              <div className="song-type-tag" style={{
+                                position: 'absolute',
+                                top: '8px',
+                                left: '8px',
+                                background: 'rgba(0, 0, 0, 0.7)',
+                                color: 'white',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px'
+                              }}>
+                                {songTypeLabel}
                               </div>
                             )}
                             <Button
@@ -552,6 +551,16 @@ const Music = () => {
                           title={item?.play_name}
                           description={
                             <div className="description-container">
+                              {songType && (
+                                <div style={{ 
+                                  color: '#1890ff', 
+                                  fontSize: '12px', 
+                                  fontWeight: 'bold',
+                                  marginBottom: '4px'
+                                }}>
+                                  {songTypeLabel}
+                                </div>
+                              )}
                               <Text ellipsis={{ rows: 2 }}>{cleanDescription(item?.play_description)}</Text>
                             </div>
                           }
