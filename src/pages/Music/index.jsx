@@ -1,4 +1,4 @@
-import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select, Tooltip, Divider} from "antd";
+import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select} from "antd";
 import { useEffect, useState } from "react";
 import {deleteData, getData, sendData} from "../../utils/api"
 import { List } from "antd/lib";
@@ -34,47 +34,46 @@ const Music = () => {
     });
   };
 
-const [InputPlaylist] = Form.useForm();
-const handleSubmit = () => {
-  const play_name = InputPlaylist.getFieldValue("play_title");
-  const play_url = InputPlaylist.getFieldValue("play_url");
-  const play_genre = InputPlaylist.getFieldValue("play_genre");
-  const play_thumbnail = InputPlaylist.getFieldValue("play_thumbnail");
-  let play_description = InputPlaylist.getFieldValue("play_description");
+  const [InputPlaylist] = Form.useForm();
+  const handleSubmit = () => {
+    const play_name = InputPlaylist.getFieldValue("play_title");
+    const play_url = InputPlaylist.getFieldValue("play_url");
+    const play_genre = InputPlaylist.getFieldValue("play_genre");
+    const play_thumbnail = InputPlaylist.getFieldValue("play_thumbnail");
+    let play_description = InputPlaylist.getFieldValue("play_description");
 
-  // Jika mode add to playlist, tambahkan info playlist ke description
-  if (isAddToPlaylist && selectedPlaylist) {
-    const playlistInfo = selectedPlaylist === "all" ? "Added to All Playlists" : `Playlist ${selectedPlaylist}`;
-    play_description = play_description ? `${play_description} | ${playlistInfo}` : playlistInfo;
-  }
+    // Jika mode add to playlist, tambahkan info playlist ke description
+    if (isAddToPlaylist && selectedPlaylist) {
+      const playlistInfo = selectedPlaylist === "all" ? "Added to All Playlists" : `Playlist ${selectedPlaylist}`;
+      play_description = play_description ? `${play_description} | ${playlistInfo}` : playlistInfo;
+    }
 
-  const formData = new FormData();
-  formData.append("play_name", play_name);
-  formData.append("play_url", play_url);
-  formData.append("play_thumbnail", play_thumbnail);
-  formData.append("play_genre", play_genre);
-  formData.append("play_description", play_description);
+    const formData = new FormData();
+    formData.append("play_name", play_name);
+    formData.append("play_url", play_url);
+    formData.append("play_thumbnail", play_thumbnail);
+    formData.append("play_genre", play_genre);
+    formData.append("play_description", play_description);
 
-  const url = isEdit || isAddToPlaylist ? `/api/playlist/update/${idSelected}` : "/api/playlist/43";
-  const msg = isEdit ? "Sukses memperbarui data" : isAddToPlaylist ? "Sukses menambahkan ke playlist" : "Sukses menambah data";
+    const url = isEdit || isAddToPlaylist ? `/api/playlist/update/${idSelected}` : "/api/playlist/43";
+    const msg = isEdit ? "Sukses memperbarui data" : isAddToPlaylist ? "Sukses menambahkan ke playlist" : "Sukses menambah data";
 
-  sendData(url, formData)
-    .then((resp) => {
-      if (resp?.datas) {
-        openNotificationWithIcon("success", "Data Playlist", msg);
-        getDataPlaylist();
-        InputPlaylist.resetFields();
-        onCloseDrawer();
-      } else {
-        openNotificationWithIcon("error", "Data Playlist", "Data gagal dikirim");
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      openNotificationWithIcon("error", "Server Error", "Gagal mengirim data");
-    });
-};
-
+    sendData(url, formData)
+      .then((resp) => {
+        if (resp?.datas) {
+          openNotificationWithIcon("success", "Data Playlist", msg);
+          getDataPlaylist();
+          InputPlaylist.resetFields();
+          onCloseDrawer();
+        } else {
+          openNotificationWithIcon("error", "Data Playlist", "Data gagal dikirim");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        openNotificationWithIcon("error", "Server Error", "Gagal mengirim data");
+      });
+  };
 
   useEffect(() => {
     getDataPlaylist();
@@ -102,7 +101,6 @@ const handleSubmit = () => {
     });
   };
 
-
   const [isEdit, setIsEdit] = useState(false);
   const [isAddToPlaylist, setIsAddToPlaylist] = useState(false);
   const [idSelected, setIdSelected] = useState(null);
@@ -124,7 +122,6 @@ const handleSubmit = () => {
     InputPlaylist.setFieldValue("play_description", record?.play_description || "");
   };
 
-  // const [isDelete, setIsDelete] = useState(false);
   let namaDrawer = isEdit ? "Edit" : isAddToPlaylist ? "Add to My Playlist" : "Add";
 
   const confirmDelete = (record) => {
@@ -147,25 +144,7 @@ const handleSubmit = () => {
       });
   }
 
-  const handleAddToPlaylist = (record) => {
-    //buka drawer
-    setIsOpenDrawer(true);
-    //buat isAddToPlaylist menjadi true, menandakan kita sedang mode add to playlist
-    setIsAddToPlaylist(true);
-    setIsEdit(false);
-    //ambil id yang telah diselect sesuai dengan card yang di click
-    setIdSelected(record?.id_play);
-    //sisipkan nilai nilai yang diselect ke form drawer
-    InputPlaylist.setFieldValue("play_title", record?.play_name);
-    InputPlaylist.setFieldValue("play_url", record?.play_url);
-    InputPlaylist.setFieldValue("play_genre", record?.play_genre);
-    InputPlaylist.setFieldValue("play_thumbnail", record?.play_thumbnail);
-    InputPlaylist.setFieldValue("play_description", record?.play_description || "");
-  };
-
   const [filterDescription, setFilterDescription] = useState("semua");
-
-
 
   const[searchText, setSearchText] = useState("");
   let dataSourceFiltered = Array.isArray(dataSources)
@@ -179,17 +158,12 @@ const handleSubmit = () => {
           const description = item?.play_description || "";
           matchesFilter = description.toLowerCase().includes(filterDescription.toLowerCase());
         }
-        
         // Kedua kondisi harus terpenuhi
         return matchesSearch && matchesFilter;
       })
     : [];
 
   const { Option } = Select;
-
-  const musicCount = dataSources.filter(
-  (item) => item?.play_genre?.toLowerCase() === "music"
-  ).length;
 
   return (
     <div className="layout-content">
@@ -349,13 +323,14 @@ const handleSubmit = () => {
                       actions={[
                         <EditOutlined key="edit" onClick={() => handleDrawerEdit(item)} />,
                         <Popconfirm
+                          key="delete-popconfirm"
                           title="Hapus music ini?"
-                          description="Apakah Anda yakin ingin menghapus music ini?"
+                          description={`Apakah Anda yakin ingin menghapus ${item?.play_name}?`}
                           onConfirm={() => confirmDelete(item)}
                           okText="Ya"
                           cancelText="Tidak"
                         >
-                          <DeleteOutlined key="delete" />
+                          <DeleteOutlined />
                         </Popconfirm>
                       ]}
                     >

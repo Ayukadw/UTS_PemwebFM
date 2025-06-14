@@ -271,8 +271,9 @@ const handleSubmit = () => {
                       actions={[
                         <EditOutlined key="edit" onClick={() => handleDrawerEdit(item)} />,
                         <Popconfirm
+                          key="popconfirm-delete"
                           title="Hapus education ini?"
-                          description="Apakah Anda yakin ingin menghapus education ini?"
+                          description={`Apakah Anda yakin ingin menghapus ${item?.play_name}?`}
                           onConfirm={() => confirmDelete(item)}
                           okText="Ya"
                           cancelText="Tidak"

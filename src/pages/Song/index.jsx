@@ -1,4 +1,4 @@
-import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select, Tooltip} from "antd";
+import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select} from "antd";
 import { useEffect, useState } from "react";
 import {deleteData, getData, sendData} from "../../utils/api"
 import { List } from "antd/lib";
@@ -140,17 +140,6 @@ const handleSubmit = () => {
   }
 
   const[searchText, setSearchText] = useState("");
-  const handleSearch = (search) => {
-    setSearchText(search.toLowerCase());
-    // if (value.length > 0) {
-    //   const filteredData = dataSources.filter((item) =>
-    //     item?.name_natures.toLowerCase().includes(value.toLowerCase())
-    //   );
-    //   setDataSources(filteredData);
-    // } else {
-    //   getDataPlaylist();
-    // }
-  };
 
   const musicCount = dataSources.filter(
   (item) => item?.play_genre?.toLowerCase() === "song"
@@ -290,8 +279,9 @@ const handleSubmit = () => {
                       actions={[
                         <EditOutlined key="edit" onClick={() => handleDrawerEdit(item)} />,
                         <Popconfirm
+                          key="delete-popconfirm"
                           title="Hapus song ini?"
-                          description="Apakah Anda yakin ingin menghapus song ini?"
+                          description={`Apakah Anda yakin ingin menghapus ${item?.play_name}?`}
                           onConfirm={() => confirmDelete(item)}
                           okText="Ya"
                           cancelText="Tidak"
