@@ -2,7 +2,8 @@ import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, n
 import { useEffect, useState } from "react";
 import {deleteData, getData, sendData} from "../../utils/api"
 import { List } from "antd/lib";
-import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined, PlayCircleFilled} from '@ant-design/icons';
+import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined, PlayCircleOutlined} from '@ant-design/icons';
+import "./styles.css";
 
 const { Text, Title } = Typography;
 
@@ -196,6 +197,17 @@ const handleSubmit = () => {
       <Row gutter={[24, 0]}>
         <Col xs={23} className="mb-24">
           <Card bordered={false} className="circlebox h-full w-full">
+            <div className="header-section">
+              <Title level={2} className="gradient-text">Daftar Music</Title>
+              <Input
+                prefix={<SearchOutlined />}
+                placeholder="Cari judul music"
+                allowClear
+                size="large"
+                className="search-input"
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+            </div>
             <FloatButton
               shape="circle"
               type="primary"
@@ -204,6 +216,7 @@ const handleSubmit = () => {
               onClick={() => {
                 handleDrawer()
               }}
+              className="add-button"
             />
             <Drawer title={`${namaDrawer} Data`} onClose={onCloseDrawer} open={isOpenDrawer} extra={
               <Button type="primary" onClick={()=> handleSubmit()}>
@@ -285,156 +298,77 @@ const handleSubmit = () => {
               </Form>
              </Drawer>
 
-            <Title>Daftar Music</Title>
-            <Input
-              prefix={<SearchOutlined />}
-              placeholder="Cari judul Music"
-              allowClear
-              size="large"
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-            <div style={{ marginBottom: 16 }}>
-            </div>
-            {["semua", "adi", "ardo", "ayuk", "ega"].map((keyword) => (
-                <Button
-                    key={keyword}
-                    type={filterDescription === keyword ? "primary" : "default"}
-                    style={{ marginRight: 10, marginBottom: 4 }}
-                    onClick={() => setFilterDescription(keyword)}
-                >
-                    {keyword.charAt(0).toUpperCase() + keyword.slice(1)}
-                </Button>
-                ))}
-            <div style={{ marginBottom: 16 }}>
-            </div>
-
-            < divider style={{ margin: "16px 0" }} />
+            <div style={{ marginBottom: 16 }}> </div>
             {isLoading ? (
-              <div>Sedang menunggu data</div>
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <Text>Sedang memuat data...</Text>
+              </div>
             ) : (
-           <List
-  grid={{
-    gutter: 16,
-    xs: 1,
-    sm: 1,
-    md: 2,
-    lg: 2,
-    xl: 2,
-  }}
-                dataSource={dataSourceFiltered ?? []}
-                
-                pagination={{
-                  pageSize: 6, 
-                  showSizeChanger: false,
+              <List
+                grid={{
+                  gutter: 24,
+                  xs: 1,
+                  sm: 2,
+                  md: 2,
+                  lg: 3,
+                  xl: 3,
                 }}
-                
+                dataSource={dataSourceFiltered ?? []}
                 renderItem={(item) => (
                   <List.Item key={item?.id_play}>
-                
-
-                
-  <Card
-    style={{
-      padding: 0,
-      borderRadius: 12,
-      overflow: "hidden",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    }}
-    bodyStyle={{ padding: 0, width: "100%" }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        width: "100%",
-      }}
-    >
-      {/* Thumbnail */}
-      <div style={{ flex: "0 0 126px" }}>
-        <img
-          src={
-            item?.play_thumbnail ||
-            "https://via.placeholder.com/126x126.png?text=No+Image"
-          }
-          alt="Thumbnail"
-          style={{
-            width: 126,
-            height: 126,
-            objectFit: "cover",
-          }}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src =
-              "https://via.placeholder.com/126x126.png?text=Broken";
-          }}
-        />
-      </div>
-
-      {/* Judul & info */}
-      <div
-        style={{
-          flex: 1,
-          padding: "12px 24px",
-        }}
-      >
-        <Title level={5} style={{ margin: 0 }}>
-          {item?.play_name || "Tanpa Judul"}
-        </Title>
-        <Text type="secondary">
-        {item?.play_description || "-"}
-        </Text>
-        {/* Ikon aksi */}
-        <div style={{ marginTop: 12 }}>
-          <Tooltip title="Edit">
-            <EditOutlined
-              style={{ fontSize: 18, marginRight: 16 }}
-              onClick={() => handleDrawerEdit(item)}
-            />
-          </Tooltip>
-          <Tooltip title="Hapus">
-            <Popconfirm
-              title="Hapus data"
-              description={`Apakah kamu yakin menghapus data ${item?.play_name}?`}
-              onConfirm={() => confirmDelete(item)}
-              okText="Ya"
-              cancelText="Tidak"
-            >
-              <DeleteOutlined
-              style={{ fontSize: 18, marginRight: 16}}
-              />
-            </Popconfirm>
-          </Tooltip>
-            <Tooltip title="Tambahkan ke My Playlist">
-          <PlusCircleOutlined
-            style={{
-              fontSize: 18,
-              marginRight: 16,
-            }}
-            onClick={() => handleAddToPlaylist(item)}
-          />
-        </Tooltip>
-        </div>
-      </div>
-
-      {/* Tombol Play */}
-      <div
-  onClick={() => window.open(item?.play_url, "_blank")}
->
-  <PlayCircleFilled style={{ fontSize: 36}} />
-</div>
-<div 
-style={{
-    flex: "0 0 40px",
-  }}>
-
-  </div>
-    </div>
-  </Card>
-</List.Item>
-
+                    <Card
+                      hoverable
+                      className="music-card"
+                      cover={
+                        <div className="image-container">
+                          <img
+                            src={
+                              item?.play_thumbnail ||
+                              "https://via.placeholder.com/300x150.png?text=No+Image"
+                            }
+                            alt="Thumbnail"
+                            className="music-thumbnail"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src =
+                                "https://via.placeholder.com/300x150.png?text=Broken";
+                            }}
+                          />
+                          <div className="genre-tag">{item?.play_genre}</div>
+                          <Button
+                            type="primary"
+                            icon={<PlayCircleOutlined />}
+                            className="play-button"
+                            onClick={() => window.open(item?.play_url, '_blank')}
+                          >
+                            Tonton
+                          </Button>
+                        </div>
+                      }
+                      actions={[
+                        <EditOutlined key="edit" onClick={() => handleDrawerEdit(item)} />,
+                        <Popconfirm
+                          title="Hapus music ini?"
+                          description="Apakah Anda yakin ingin menghapus music ini?"
+                          onConfirm={() => confirmDelete(item)}
+                          okText="Ya"
+                          cancelText="Tidak"
+                        >
+                          <DeleteOutlined key="delete" />
+                        </Popconfirm>
+                      ]}
+                    >
+                      <Card.Meta
+                        title={item?.play_name}
+                        description={
+                          <div className="description-container">
+                            <Text ellipsis={{ rows: 2 }}>{item?.play_description || "Tidak ada deskripsi"}</Text>
+                          </div>
+                        }
+                      />
+                    </Card>
+                  </List.Item>
                 )}
               />
             )}

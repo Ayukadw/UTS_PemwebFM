@@ -1,8 +1,9 @@
-import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select} from "antd";
+import { Col, Row, Typography, Card, FloatButton, Drawer, Form, Input, Button, notification, Popconfirm, Select, Tabs} from "antd";
 import { useEffect, useState } from "react";
 import {deleteData, getData, sendData} from "../../utils/api"
 import { List } from "antd/lib";
-import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined} from '@ant-design/icons';
+import { PlusCircleOutlined, SearchOutlined, EditOutlined, DeleteOutlined, PlayCircleOutlined} from '@ant-design/icons';
+import "./styles.css";
 
 const { Title, Text } = Typography;
 
@@ -168,12 +169,53 @@ const handleSubmit = () => {
 
   const { Option } = Select;
 
+  const [activeTab, setActiveTab] = useState("semua");
+
+  const items = [
+    {
+      key: "semua",
+      label: "Semua",
+    },
+    {
+      key: "adi",
+      label: "Adi",
+    },
+    {
+      key: "ardo",
+      label: "Ardo",
+    },
+    {
+      key: "ayuk",
+      label: "Ayuk",
+    },
+    {
+      key: "ega",
+      label: "Ega",
+    },
+  ];
+
+  const filteredData = dataSourceFiltered?.filter((item) => {
+    if (activeTab === "semua") return true;
+    return item?.play_description?.toLowerCase().includes(activeTab.toLowerCase());
+  });
+
   return (
     <div className="layout-content">
       {contextHolder}
       <Row gutter={[24, 0]}>
         <Col xs={23} className="mb-24">
           <Card bordered={false} className="circlebox h-full w-full">
+            <div className="header-section">
+              <Title level={2} className="gradient-text">Daftar My Playlist</Title>
+              <Input
+                prefix={<SearchOutlined />}
+                placeholder="Cari judul playlist"
+                allowClear
+                size="large"
+                className="search-input"
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+            </div>
             <FloatButton
               shape="circle"
               type="primary"
@@ -182,6 +224,7 @@ const handleSubmit = () => {
               onClick={() => {
                 handleDrawer()
               }}
+              className="add-button"
             />
             <Drawer title={`${namaDrawer} Data`} onClose={onCloseDrawer} open={isOpenDrawer} extra={
               <Button type="primary" onClick={()=> handleSubmit()}>
@@ -231,98 +274,82 @@ const handleSubmit = () => {
               </Form>
              </Drawer>
 
-            <Title>My Playlist</Title>           
-            <Input
-              prefix={<SearchOutlined />}
-              placeholder="Cari judul playlist"
-              allowClear
-              size="large"
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-            <div style={{ marginBottom: 16 }}>
+            <div className="tabs-container">
+              <Tabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                items={items}
+                className="custom-tabs"
+              />
             </div>
-            {["semua", "adi", "ardo", "ayuk", "ega"].map((keyword) => (
-                <Button
-                    key={keyword}
-                    type={filterDescription === keyword ? "primary" : "default"}
-                    style={{ marginRight: 10, marginBottom: 4 }}
-                    onClick={() => setFilterDescription(keyword)}
-                >
-                    {keyword.charAt(0).toUpperCase() + keyword.slice(1)}
-                </Button>
-                ))}
 
             <div style={{ marginBottom: 16 }}> </div>
             {isLoading ? (
-              <div>Sedang menunggu data</div>
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <Text>Sedang memuat data...</Text>
+              </div>
             ) : (
               <List
                 grid={{
-                  gutter: 16,
+                  gutter: 24,
                   xs: 1,
-                  sm: 1,
+                  sm: 2,
                   md: 2,
                   lg: 3,
                   xl: 3,
                 }}
-                dataSource={dataSourceFiltered ?? []}
+                dataSource={filteredData ?? []}
                 renderItem={(item) => (
                   <List.Item key={item?.id_play}>
                     <Card
+                      hoverable
+                      className="playlist-card"
                       cover={
-                        <img
-                          src={
-                            item?.play_thumbnail ||
-                            "https://via.placeholder.com/300x150.png?text=No+Image"
-                          }
-                          alt="Thumbnail"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              "https://via.placeholder.com/300x150.png?text=Broken";
-                          }}
-                        />
+                        <div className="image-container">
+                          <img
+                            src={
+                              item?.play_thumbnail ||
+                              "https://via.placeholder.com/300x150.png?text=No+Image"
+                            }
+                            alt="Thumbnail"
+                            className="playlist-thumbnail"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src =
+                                "https://via.placeholder.com/300x150.png?text=Broken";
+                            }}
+                          />
+                          <div className="genre-tag">{item?.play_genre}</div>
+                          <Button
+                            type="primary"
+                            icon={<PlayCircleOutlined />}
+                            className="play-button"
+                            onClick={() => window.open(item?.play_url, '_blank')}
+                          >
+                            Tonton
+                          </Button>
+                        </div>
                       }
                       actions={[
-                        <EditOutlined
-                          key="edit"
-                          onClick={() => handleDrawerEdit(item)}
-                        />,
-                        <a
-                          key="view"
-                          href={item?.play_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <EditOutlined key="edit" onClick={() => handleDrawerEdit(item)} />,
+                        <Popconfirm
+                          title="Hapus playlist ini?"
+                          description="Apakah Anda yakin ingin menghapus playlist ini?"
+                          onConfirm={() => confirmDelete(item)}
+                          okText="Ya"
+                          cancelText="Tidak"
                         >
-                          <SearchOutlined />
-                        </a>,
-                      <Popconfirm
-                        key={item?.id_play}  
-                        title="Hapus data"
-                        description={`Apakah kamu yakin menghapus data ${item?.play_name}?`}
-                        onConfirm={() => confirmDelete(item)}
-                        okText="Ya"
-                        cancelText="Tidak"
-                      >
-                        <DeleteOutlined key={item?.id_play} />
-                      </Popconfirm>]}
+                          <DeleteOutlined key="delete" />
+                        </Popconfirm>
+                      ]}
                     >
                       <Card.Meta
-                        title={item?.play_name || "Tanpa Judul"}
+                        title={item?.play_name}
                         description={
-                          <>
-                            <Text>Genre: {item?.play_genre || "-"}</Text>
-                            <br />
-                            <Text>{item?.play_description || "-"}</Text>
-                            <br />
-                            <a
-                              href={item?.play_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Tonton Video
-                            </a>
-                          </>
+                          <div className="description-container">
+                            <Text ellipsis={{ rows: 2 }}>{item?.play_description || "Tidak ada deskripsi"}</Text>
+                          </div>
                         }
                       />
                     </Card>
