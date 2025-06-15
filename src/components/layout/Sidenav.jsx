@@ -131,22 +131,6 @@ function Sidenav({ color }) {
         </NavLink>
       ),
     },
-    {
-      key: "/song",
-      label: (
-        <NavLink to="/song">
-          <span
-            className="icon"
-            style={{
-              backgroundColor: selectedKey === "song" ? "#f0f2f5" : "",
-            }}
-          >
-            <TikTokOutlined />
-          </span>
-          <span className="label">Song</span>
-        </NavLink>
-      ),
-    },
 
     {
       key: "/others",

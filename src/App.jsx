@@ -50,11 +50,6 @@ function App() {
         />
         <Route
           exact
-          path="/song"
-          element={<PrivateRoute component={<Song />} />}
-        />
-        <Route
-          exact
           path="/education"
           element={<PrivateRoute component={<Education />} />}
         />

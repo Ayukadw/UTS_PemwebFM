@@ -167,8 +167,9 @@ const Music = () => {
         } else if (Array.isArray(resp?.datas)) {
           playlists = resp.datas;
         }  
+        // Ubah filter untuk menampilkan music dan song saja
         const filtered = playlists.filter(
-          (item) => item?.play_genre?.toLowerCase() === "music"
+          (item) => item?.play_genre?.toLowerCase() === "music" || item?.play_genre?.toLowerCase() === "song"
         );  
         setDataSources(filtered);
       })
@@ -240,6 +241,7 @@ const Music = () => {
 
   const [filterDescription, setFilterDescription] = useState("semua");
   const [filterSongType, setFilterSongType] = useState("semua");
+  const [filterGenre, setFilterGenre] = useState("semua"); // Filter genre baru
   const [searchText, setSearchText] = useState("");
   
   let dataSourceFiltered = Array.isArray(dataSources)
@@ -261,103 +263,119 @@ const Music = () => {
           // Cek apakah filterSongType ada dalam array allSongTypes
           matchesSongType = allSongTypes.includes(filterSongType.toLowerCase());
         }
+
+        // Filter berdasarkan genre - FILTER BARU
+        let matchesGenre = true;
+        if (filterGenre !== "semua") {
+          const itemGenre = (item?.play_genre || "").toLowerCase();
+          matchesGenre = itemGenre === filterGenre.toLowerCase();
+        }
         
-        return matchesSearch && matchesFilter && matchesSongType;
+        return matchesSearch && matchesFilter && matchesSongType && matchesGenre;
       })
     : [];
 
   // Daftar jenis musik yang tersedia
   const songTypes = [
-    { value: "kpop", label: "K-Pop" },
     { value: "pop", label: "Pop" },
+    { value: "kpop", label: "K-Pop" },
+    { value: "chill", label: "Chill" },
+    { value: "anime", label: "Anime" },
+    { value: "fokus", label: "Fokus" },
+    { value: "perjalanan", label: "Perjalanan" },
     { value: "rock", label: "Rock" },
     { value: "jazz", label: "Jazz" },
     { value: "blues", label: "Blues" },
-    { value: "classical", label: "Classical" },
     { value: "country", label: "Country" },
     { value: "electronic", label: "Electronic" },
     { value: "hiphop", label: "Hip Hop" },
     { value: "rnb", label: "R&B" },
-    { value: "reggae", label: "Reggae" },
-    { value: "folk", label: "Folk" },
-    { value: "alternative", label: "Alternative" },
-    { value: "indie", label: "Indie" }
   ];
   
 
   return (
     <div className="layout-content">
       {contextHolder}
-      <Row gutter={[24, 0]}>
+      <Row gutter={[10, 0]}>
         <Col xs={23} className="mb-24">
           <Card bordered={false} className="circlebox h-full w-full">
             <div className="header-section">
-              <Title level={2} className="gradient-text">Daftar Music</Title>
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                <Input
-                  prefix={<SearchOutlined />}
-                  placeholder="Cari judul music"
-                  allowClear
-                  size="large"
-                  className="search-input"
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ flex: 1 }}
-                />
+              <Title level={2} className="gradient-text">Daftar Music & Song</Title>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
+                <div style={{ flex: 1 }}>
+                  <Input
+                    prefix={<SearchOutlined />}
+                    placeholder="Cari judul music"
+                    allowClear
+                    size="large"
+                    className="search-input"
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-  {/* Filter Buttons */}
-<div style={{ marginBottom: '8px' }}>
-  <Text strong style={{ marginRight: '12px', color: '#666' }}>
-    Filter Jenis Musik:
-  </Text>
-</div>
 
-<div 
-  className="scroll-on-hover"
-  style={{ 
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '8px',
-  }}
->
-  <Button 
-    type={filterSongType === "semua" ? "primary" : "default"}
-    size="small"
-    onClick={() => setFilterSongType("semua")}
-    style={{
-      borderRadius: '16px',
-      fontSize: '12px',
-      height: '28px',
-      minWidth: '60px',
-      whiteSpace: 'nowrap',
-      background: filterSongType === "semua" ? '#1890ff' : '#f5f5f5',
-      borderColor: filterSongType === "semua" ? '#1890ff' : '#d9d9d9',
-      color: filterSongType === "semua" ? '#fff' : '#666'
-    }}
-  >
-    Semua
-  </Button>
-  {songTypes.map(type => (
-    <Button 
-      key={type.value}
-      type={filterSongType === type.value ? "primary" : "default"}
-      size="small"
-      onClick={() => setFilterSongType(type.value)}
-      style={{
-        borderRadius: '16px',
-        fontSize: '12px',
-        height: '28px',
-        minWidth: 'fit-content',
-        whiteSpace: 'nowrap',
-        background: filterSongType === type.value ? '#1890ff' : '#f5f5f5',
-        borderColor: filterSongType === type.value ? '#1890ff' : '#d9d9d9',
-        color: filterSongType === type.value ? '#fff' : '#666'
-      }}
-    >
-      {type.label}
-    </Button>
-  ))}
-</div>
+                <div style={{ minWidth: '200px',  marginBottom: '16px',}}>
+                  <Select
+                    value={filterGenre}
+                    onChange={(value) => setFilterGenre(value)}
+                    size="large"
+                    style={{ width: '15%'}}
+                    placeholder="Pilih Genre"
+                  >
+                    <Option value="semua">Music & Song</Option>
+                    <Option value="music">Music</Option>
+                    <Option value="song">Song</Option>
+                  </Select>
+                </div>
+
+            {/* Filter Song Type Buttons */}
+            <div 
+              className="scroll-on-hover"
+              style={{ 
+                display: 'flex',
+                gap: '10px',
+                marginBottom: '8px',
+              }}
+            >
+              <Button 
+                type={filterSongType === "semua" ? "primary" : "default"}
+                size="small"
+                onClick={() => setFilterSongType("semua")}
+                style={{
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  height: '28px',
+                  minWidth: '60px',
+                  whiteSpace: 'nowrap',
+                  background: filterSongType === "semua" ? '#1890ff' : '#f5f5f5',
+                  borderColor: filterSongType === "semua" ? '#1890ff' : '#d9d9d9',
+                  color: filterSongType === "semua" ? '#fff' : '#666'
+                }}
+              >
+                Semua
+              </Button>
+              {songTypes.map(type => (
+                <Button 
+                  key={type.value}
+                  type={filterSongType === type.value ? "primary" : "default"}
+                  size="small"
+                  onClick={() => setFilterSongType(type.value)}
+                  style={{
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    height: '28px',
+                    minWidth: 'fit-content',
+                    whiteSpace: 'nowrap',
+                    background: filterSongType === type.value ? '#1890ff' : '#f5f5f5',
+                    borderColor: filterSongType === type.value ? '#1890ff' : '#d9d9d9',
+                    color: filterSongType === type.value ? '#fff' : '#666'
+                  }}
+                >
+                  {type.label}
+                </Button>
+              ))}
+            </div>
 
             <FloatButton
               shape="circle"
@@ -426,12 +444,13 @@ const Music = () => {
                 >
                   <Select placeholder="Pilih genre" disabled={isAddToPlaylist}>
                     <Option value="music">Music</Option>
+                    <Option value="song">Song</Option>
                   </Select>
                 </Form.Item>
                 
                 {/* Form Song Type - Field Baru */}
                 <Form.Item
-                  label="Jenis Musik"
+                  label="Jenis"
                   name="play_song_type"
                   rules={[{ required: true, message: 'Pilih jenis musik!' }]}
                 >
@@ -486,6 +505,12 @@ const Music = () => {
                   xl: 3,
                 }}
                 dataSource={dataSourceFiltered ?? []}
+
+                pagination={{
+                  pageSize: 6, 
+                  showSizeChanger: false,
+                }}
+
                 renderItem={(item) => {
                   const allSongTypes = extractAllSongTypes(item?.play_description);
                   const songTypeLabels = allSongTypes.map(type => {

@@ -76,8 +76,8 @@ const Education = () => {
   formData.append("play_genre", play_genre);
   formData.append("play_description", play_description);
 
-  const url = isEdit ? `/api/playlist/update/${idSelected}` : "/api/playlist/43";
-  const msg = isEdit ? "Sukses memperbarui data" : "Sukses menambah data";
+const url = isEdit || isAddToPlaylist ? `/api/playlist/update/${idSelected}` : "/api/playlist/43";
+  const msg = isEdit ? "Sukses memperbarui data" : isAddToPlaylist ? "Sukses menambahkan ke playlist" : "Sukses menambah data";
 
   sendData(url, formData)
     .then((resp) => {
